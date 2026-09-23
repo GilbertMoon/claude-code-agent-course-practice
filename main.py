@@ -21,9 +21,9 @@ from src.notifier import send_slack_message, send_gmail
 PROJECT_ROOT = Path(__file__).resolve().parent
 ENV_PATH = PROJECT_ROOT / ".env"
 
-# 이번 STEP에서는 외부 전송을 자동으로 실행하지 않습니다.
-SEND_SLACK = False
-SEND_GMAIL = False
+# 환경변수로 켜고 끌 수 있습니다. 기본값은 항상 false(외부 전송 없음)입니다.
+SEND_SLACK = os.getenv("SEND_SLACK", "false").lower() == "true"
+SEND_GMAIL = os.getenv("SEND_GMAIL", "false").lower() == "true"
 
 # Notebook STEP 11에서 사용한 키워드 목록과 동일합니다.
 RELATED_KEYWORDS = [

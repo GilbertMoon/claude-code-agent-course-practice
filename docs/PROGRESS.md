@@ -15,20 +15,20 @@
 ## 요약 (한눈에 보기)
 
 - **마지막 작업일**: 2026-09-23
-- **마지막 완료 STEP**: STEP 21 Git 저장 / commit / push
-- **현재 STEP**: STEP 22 GitHub Actions 수동 실행
+- **마지막 완료 STEP**: STEP 22 GitHub Actions 수동 실행
+- **현재 STEP**: STEP 23 GitHub Secrets 등록
 - **현재 상태**: IN_PROGRESS
-- **STEP 20 완료 근거**: 사용자가 Notebook STEP 20 Code Cell을 직접 실행하여 프로젝트 구조 정상, `py_compile` 4개 파일 PASS, `import main` 성공, `new_jobs.csv` shape `(5, 9)`, 필수 컬럼 9개 PASS, `job_url` 중복 0/결측 0, Markdown 보고서 존재, `.env`/`.venv` gitignore 정상, 비밀정보 하드코딩 검사 PASS, Slack/Gmail/OpenAI 실제 호출 없음을 모두 확인함
 - **STEP 21 완료 근거**: `requirements.txt` 신규 생성(핵심 패키지 6개), 비밀정보/gitignore 최종 점검 PASS, practice 저장소 `main` 브랜치에 commit(`590d23f`) 및 push 성공(`2e7c98a..590d23f`), push 후 `git status` clean, `git remote -v`가 `GilbertMoon/claude-code-agent-course-practice`만 가리킴을 확인함. 교육용 원본 저장소에는 commit/push 없음.
-- **다음 작업**: `.github/workflows/ax-job-agent.yml`(수동 실행 전용, `workflow_dispatch`만 사용)을 작성하고 practice 저장소에 push한다. 사용자가 GitHub 웹에서 Actions → AX Job Agent → Run workflow를 직접 실행하여 성공 여부를 확인해야 STEP 22를 `DONE` 처리한다.
-- **다음 작업 위치**: `.github/workflows/ax-job-agent.yml`, `notebooks/ax_job_pipeline.ipynb`의 STEP 22 Cell, `docs/PROGRESS.md`
-- **완료 기준**: 사용자가 GitHub Actions에서 `workflow_dispatch`로 수동 실행하여 성공(success)으로 완료됨을 직접 확인할 것 (Claude Code는 Actions를 직접 실행하지 않음)
+- **STEP 22 완료 근거**: 사용자가 GitHub 웹에서 Actions → AX Job Agent → Run workflow를 직접 실행하여 `workflow_dispatch` 수동 실행이 Success로 완료됨을 확인함(`run-agent` job 성공, `python main.py` 정상 실행). `SEND_SLACK=False`/`SEND_GMAIL=False`이므로 Slack/Gmail 실제 발송은 의도적으로 생략됨.
+- **다음 작업**: 로컬 `.env`에 있던 6개 값(`OPENAI_API_KEY`/`OPENAI_MODEL`/`SLACK_WEBHOOK_URL`/`GMAIL_ADDRESS`/`GMAIL_APP_PASSWORD`/`GMAIL_TO`)을 GitHub Repository Secrets로 사용자가 직접 등록한다. `main.py`는 `SEND_SLACK`/`SEND_GMAIL` 환경변수로 켜고 끌 수 있도록 수정했고(기본값 `false`), workflow에는 Slack/Gmail Secret 연결 구조만 준비했다(기본값 `"false"` 유지, 실제 발송 강제하지 않음).
+- **다음 작업 위치**: GitHub 웹 Settings → Secrets and variables → Actions (사용자가 직접 등록), `docs/PROGRESS.md`
+- **완료 기준**: 사용자가 GitHub 웹에서 6개 Repository Secret을 모두 실제 등록 완료할 것 (Claude Code는 Secret 값을 직접 다루거나 출력하지 않음)
 
 ---
 
 ## 현재 STEP
 
-STEP 22 - GitHub Actions 수동 실행
+STEP 23 - GitHub Secrets 등록
 
 ## 현재 상태
 
@@ -38,12 +38,12 @@ IN_PROGRESS
 
 ## 마지막 완료 작업
 
-STEP 21 완료 — Git 저장 / commit / push (Claude Code가 터미널에서 직접 수행 및 확인 완료).
+STEP 22 완료 — GitHub Actions 수동 실행 (사용자 직접 실행 및 확인 완료).
 
-- `requirements.txt` 신규 생성(핵심 패키지 6개), 비밀정보/gitignore 최종 점검 PASS
-- `git add` → `git commit`(`590d23f`) → `git push origin main` 성공(`2e7c98a..590d23f`)
-- push 후 `git status` clean, `git remote -v`가 `GilbertMoon/claude-code-agent-course-practice`만 가리킴을 확인
-- 교육용 원본 저장소(`GilbertMoon/claude-code-agent-course`)에는 commit/push 없음
+- 사용자가 GitHub 웹에서 Actions → AX Job Agent → Run workflow를 직접 실행
+- `workflow_dispatch` 수동 실행 Status: Success, `run-agent` job 성공 확인
+- Actions에서 `python main.py`가 정상 실행됨
+- `SEND_SLACK=False`/`SEND_GMAIL=False`로 Slack/Gmail 실제 발송은 의도적으로 생략됨
 
 ## STEP 21 완료 세부 내용 (기록용)
 
@@ -73,30 +73,38 @@ Notebook에 STEP 21의 3-Cell(작업 계획 / 코드 / 결과 해석)을 추가�
 
 **Git 실행 결과**: `git add`(수정/신규 파일만 명시적으로 지정, `git add -A` 사용 안 함) → 스테이징 목록에 `.env`/`.venv` 없음 확인 → `git diff --cached`로 비밀정보 패턴 재검사(매치 없음) → `git commit -m "Complete local AX Job Agent pipeline through STEP 20"` 성공(SHA `590d23f`) → push 직전 `git remote -v` 재확인(practice 저장소만) → `git push origin main` 성공(`2e7c98a..590d23f`) → push 후 `git status` clean, `git log --oneline -3`에 새 커밋 확인, `git remote -v` 최종 재확인 완료.
 
+## STEP 22 완료 세부 내용 (기록용)
+
+`.github/workflows/ax-job-agent.yml`을 신규 생성했습니다. `workflow_dispatch`만 트리거로 사용했고(cron schedule은 STEP 24 예정), `ubuntu-latest` runner에서 `actions/checkout@v4` → `actions/setup-python@v5`(Python 3.12) → `pip install --upgrade pip` → `pip install -r requirements.txt` → `python main.py` 순서로 실행하도록 작성했습니다. `main.py`는 `Path(__file__)` 기준 상대 경로만 사용해 Windows 하드코딩이 없음을 확인, `load_dotenv`가 `.env` 없이도 예외 없이 동작함을 확인, `data/processed/new_jobs.csv`/`requirements.txt`/`main.py`가 Git에 포함되어 있음을 확인했습니다. 사용자가 GitHub 웹에서 Run workflow를 직접 실행하여 Success를 확인 완료 — STEP 22 `DONE` 처리.
+
 ## 다음 작업
 
-STEP 21이 완료되어 STEP 22(GitHub Actions 수동 실행)로 넘어왔습니다. `.github/workflows/ax-job-agent.yml`을 신규 생성했습니다. `workflow_dispatch`만 트리거로 사용했고(cron schedule은 STEP 24에서 진행), `ubuntu-latest` runner에서 `actions/checkout@v4` → `actions/setup-python@v5`(Python 3.12) → `pip install --upgrade pip` → `pip install -r requirements.txt` → `python main.py` 순서로 실행하도록 작성했습니다.
+STEP 22가 완료되어 STEP 23(GitHub Secrets 등록)으로 넘어왔습니다. 로컬 `.env`에 있던 비밀정보를 GitHub Repository Secrets로 등록하고, Actions에서 필요할 때 환경변수로 전달할 수 있는 구조를 준비했습니다. **실제 Secret 값은 어디에도 읽거나 출력하지 않았습니다.**
 
-사전 점검한 내용:
+`main.py`를 최소 수정했습니다: `SEND_SLACK`/`SEND_GMAIL`을 하드코딩된 `False` 상수 대신 환경변수 기반으로 변경했습니다(`os.getenv("SEND_SLACK", "false").lower() == "true"` 방식, 기본값은 항상 `false`). 실제로 환경변수 없음/`"false"`/`"true"` 세 경우를 모두 실행해 `False`/`False`/`True`로 정확히 동작함을 확인했습니다. `main.py`의 Slack/Gmail 발송 분기(`if SEND_SLACK: ...`, `if SEND_GMAIL: ...`)는 이미 Secret이 없을 때 값을 출력하지 않고 "생략합니다" 메시지만 남기도록 되어 있어 별도 수정하지 않았습니다.
 
-- `main.py`는 `Path(__file__).resolve().parent` 기준 상대 경로만 사용하고 Windows 절대경로 하드코딩이 없어 Ubuntu runner에서도 그대로 동작함(수정 불필요).
-- `load_dotenv(ENV_PATH)`는 `.env` 파일이 없어도 예외 없이 `False`만 반환함을 실제로 확인함 — Actions runner에 `.env`가 없어도(gitignore 대상이라 저장소에 없음) `main.py`가 실패하지 않음. `.env`를 workflow에서 새로 만들지 않음.
-- `SEND_SLACK=False`/`SEND_GMAIL=False`가 그대로 유지되어 있어 Secrets 등록 없이도 CSV 읽기/분석/보고서 생성까지는 성공해야 함(Secrets 등록은 STEP 23에서 진행).
-- `data/processed/new_jobs.csv`, `requirements.txt`, `main.py`가 모두 Git에 커밋되어 있어 Actions의 `checkout` 이후 그대로 사용 가능함을 `git ls-files`로 확인함.
-- workflow YAML을 PyYAML로 파싱하여 `name`/`on`(`workflow_dispatch`)/`jobs.run-agent.runs-on`/`steps` 구조가 정상임을 확인함(PyYAML이 `on:` 키를 YAML 1.1 규칙에 따라 boolean `true`로 표시하는 것은 파싱 라이브러리의 통상적인 동작이며, GitHub Actions 자체 파서는 `on:`을 정상적인 트리거 키로 해석함 — 실제 워크플로 문법에는 문제 없음).
-- artifact upload, cron schedule, GitHub Secrets 등록은 이번 STEP에서 추가하지 않음.
+`.github/workflows/ax-job-agent.yml`의 `run-agent` job에 `env` 블록을 추가했습니다: `SEND_SLACK: "false"`, `SEND_GMAIL: "false"`(기본값 유지, 이번 STEP에서 실제 발송을 강제하지 않음)와 `SLACK_WEBHOOK_URL`/`GMAIL_ADDRESS`/`GMAIL_APP_PASSWORD`/`GMAIL_TO`를 `${{ secrets.* }}`로 연결했습니다. `OPENAI_API_KEY`/`OPENAI_MODEL`은 `main.py`가 아직 사용하지 않으므로 불필요한 노출을 늘리지 않기 위해 workflow env에는 연결하지 않았습니다(Secret 등록 자체는 다음 확장 대비로 진행).
 
-Notebook에 STEP 22의 3-Cell(작업 계획 / 코드 / 결과 해석)을 추가했습니다. 기존 STEP 03~21은 수정하지 않았습니다. Code Cell은 GitHub Actions를 실제로 실행하지 않고 workflow 파일/`requirements.txt`/`main.py`/`new_jobs.csv` 존재 여부만 확인합니다(직접 실행 검증 완료).
+PyYAML로 workflow 구조를 재검증했고(`env` 6개 키, `runs-on: ubuntu-latest`, step 5개 모두 정상), `python -m py_compile main.py`와 `import main`을 재실행해 `SEND_SLACK`/`SEND_GMAIL`이 환경변수 미설정 시 `False`/`False`로 안전하게 기본 동작함을 확인했습니다. 소스/Notebook/문서 전체에 실제 Secret 하드코딩이 없음을 grep으로 재확인했습니다(PASS).
 
-변경 사항을 `git add` → `git commit`("Add manual GitHub Actions workflow for STEP 22") → `git push origin main`으로 practice 저장소에 반영했습니다(세부 커밋 SHA는 아래 갱신 이력 참고). 교육용 원본 저장소에는 어떤 commit/push도 하지 않았습니다.
+Notebook에 STEP 23의 3-Cell(작업 계획 / 코드 / 결과 해석)을 추가했습니다. 기존 STEP 03~22는 수정하지 않았습니다. Code Cell은 Secret을 실제로 등록/조회하지 않고, workflow 파일에 `secrets.SLACK_WEBHOOK_URL`/`secrets.GMAIL_ADDRESS`/`secrets.GMAIL_APP_PASSWORD`/`secrets.GMAIL_TO` 참조가 존재하는지, `SEND_SLACK`/`SEND_GMAIL` 기본값이 `false`인지만 확인합니다.
+
+변경 사항(`main.py`, workflow, Notebook, PROGRESS.md)을 `git add` → `git commit`("Prepare GitHub Secrets integration for STEP 23") → `git push origin main`으로 practice 저장소에 반영했습니다(세부 커밋 SHA는 아래 갱신 이력 참고). 교육용 원본 저장소에는 어떤 commit/push도 하지 않았습니다.
 
 ### 실행 예정 위치
 
-GitHub 웹(Actions → AX Job Agent → Run workflow) — **사용자가 직접 실행**
+GitHub 웹(Settings → Secrets and variables → Actions → New repository secret) — **사용자가 직접 6개 Secret 등록**
 
 ## 다음 작업 완료 기준
 
-사용자가 GitHub 웹에서 Actions → AX Job Agent → Run workflow를 직접 실행하여, 워크플로우 실행 로그가 성공(초록색 체크)으로 완료됨을 확인해야 STEP 22를 `DONE`으로 처리합니다. workflow 파일 작성과 commit/push만으로는 완료 처리하지 않습니다.
+사용자가 GitHub 웹에서 아래 6개 Repository Secret을 모두 실제로 등록 완료해야 STEP 23을 `DONE`으로 처리합니다. workflow 준비와 commit/push만으로는 완료 처리하지 않습니다.
+
+- `OPENAI_API_KEY`
+- `OPENAI_MODEL`
+- `SLACK_WEBHOOK_URL`
+- `GMAIL_ADDRESS`
+- `GMAIL_APP_PASSWORD`
+- `GMAIL_TO`
 
 ## 작업 재개 시 먼저 실행할 명령
 
@@ -137,11 +145,15 @@ where.exe python
 | STEP 19 | main.py 통합 | DONE | `main.py`에서 각 모듈 함수를 순서대로 호출하는 흐름 작성 완료, 입력 CSV를 `data/processed/new_jobs.csv` 고정 경로로 사용 — 사용자가 `python main.py`를 직접 실행하여 전체 5건/관련 5건/보고서 저장 완료/Slack·Gmail 생략을 확인 완료 |
 | STEP 20 | 로컬 전체 실행 검증 | DONE | 사용자가 Notebook STEP 20 Code Cell을 직접 실행하여 구조/문법/import/입력 데이터/main.py 구조/보고서/환경변수/보안/Slack·Gmail 호출 없음을 모두 확인 완료 |
 | STEP 21 | Git 저장 / Push | DONE | `requirements.txt` 생성, 비밀정보/gitignore 최종 점검 PASS, practice 저장소 `main` 브랜치에 commit(`590d23f`) 및 push 성공, working tree clean, 원격이 practice 저장소만임을 확인 |
-| STEP 22 | GitHub Actions 수동 실행 | IN_PROGRESS | `.github/workflows/ax-job-agent.yml`(`workflow_dispatch`, ubuntu-latest, Python 3.12, requirements.txt 설치, `python main.py`) 작성 및 push 완료 — 사용자의 GitHub Actions 수동 실행(Run workflow) 성공 확인 대기 중 |
-| STEP 23 | GitHub Secrets | NOT_STARTED | `GEMINI_API_KEY`, `SLACK_WEBHOOK_URL`, `GMAIL_USER`, `GMAIL_APP_PASSWORD` GitHub Secrets 등록 완료 |
+| STEP 22 | GitHub Actions 수동 실행 | DONE | 사용자가 GitHub 웹에서 Actions → AX Job Agent → Run workflow를 직접 실행하여 `workflow_dispatch` 수동 실행 Success 확인, `python main.py` 정상 실행 완료 |
+| STEP 23 | GitHub Secrets | IN_PROGRESS | `main.py`의 `SEND_SLACK`/`SEND_GMAIL` 환경변수화(기본값 false), workflow에 Slack/Gmail Secret 연결 구조 준비, commit/push 완료 — 사용자의 GitHub Secrets 6개 실제 등록 대기 중 |
 | STEP 24 | GitHub Actions 주간 자동 실행 | NOT_STARTED | `cron: "0 0 * * 1"` 스케줄 등록, 자동 실행 결과 확인 |
 
 ---
+
+## 갱신 이력 (최신이 위로)
+
+- **2026-09-23**: 사용자가 GitHub 웹에서 Actions → AX Job Agent → Run workflow를 직접 실행하여 `workflow_dispatch` 수동 실행 Status: Success, `run-agent` job 성공을 확인 — STEP 22 `DONE` 처리. STEP 23(GitHub Secrets 등록)으로 전환. `main.py`의 `SEND_SLACK`/`SEND_GMAIL`을 하드코딩 `False`에서 `os.getenv("SEND_SLACK", "false").lower() == "true"` 방식(기본값 항상 false)으로 최소 수정, 환경변수 미설정/`"false"`/`"true"` 세 경우를 실제 실행해 `False`/`False`/`True`로 정확히 동작함을 확인. 기존 Slack/Gmail 발송 분기는 이미 Secret 부재 시 값 미출력·생략 메시지만 남기도록 되어 있어 별도 수정 없음. `.github/workflows/ax-job-agent.yml`의 `run-agent` job에 `env` 블록 추가 — `SEND_SLACK: "false"`/`SEND_GMAIL: "false"`(기본값 유지, 실제 발송 강제 안 함)와 `SLACK_WEBHOOK_URL`/`GMAIL_ADDRESS`/`GMAIL_APP_PASSWORD`/`GMAIL_TO`를 `${{ secrets.* }}`로 연결. `OPENAI_API_KEY`/`OPENAI_MODEL`은 `main.py`가 사용하지 않아 불필요한 노출을 늘리지 않기 위해 workflow env에는 연결하지 않음(Secret 등록 자체는 진행 대상). PyYAML로 workflow 구조 재검증 PASS, `py_compile`/`import main` 재검사 PASS, 소스/Notebook/문서 전체 비밀정보 하드코딩 grep PASS. Claude Code는 `.env` 실제 값을 읽거나 출력하지 않음(Secret 이름만 다룸). Notebook에 STEP 23 3-Cell 추가(기존 STEP 03~22 미수정, Code Cell은 Secret을 실제 등록/조회하지 않고 workflow의 secrets 참조 존재 여부와 SEND_SLACK/SEND_GMAIL 기본값만 확인). `git add`/`commit`("Prepare GitHub Secrets integration for STEP 23")/`push`로 practice 저장소에 반영(교육용 원본 저장소에는 commit/push 없음). 사용자가 GitHub 웹에서 6개 Secret을 실제 등록 완료하기 전까지 STEP 23은 `IN_PROGRESS` 유지.
 
 - **2026-09-23**: STEP 21(Git 저장/commit/push) `DONE` 확정 후 STEP 22(GitHub Actions 수동 실행)로 전환. `.github/workflows/ax-job-agent.yml` 신규 생성 — 트리거는 `workflow_dispatch`만 사용(cron 없음), `runs-on: ubuntu-latest`, `actions/checkout@v4` → `actions/setup-python@v5`(`python-version: "3.12"`) → `pip install --upgrade pip` → `pip install -r requirements.txt` → `python main.py` 순서로 단순하게 작성. `main.py`는 `Path(__file__)` 기반 상대경로만 사용해 Windows 하드코딩 없음을 확인하여 별도 수정 없음. `load_dotenv`가 `.env` 파일이 없을 때 예외 없이 `False`만 반환함을 실제 실행으로 재확인 — Actions runner에 `.env`가 없어도 `main.py`가 실패하지 않음(`.env`를 workflow에서 생성하지 않음). `SEND_SLACK=False`/`SEND_GMAIL=False` 유지로 Secrets 없이도 동작 가능, GitHub Secrets 등록은 이번 STEP에서 하지 않음(STEP 23 예정). `data/processed/new_jobs.csv`/`requirements.txt`/`main.py`가 모두 Git에 포함되어 있음을 `git ls-files`로 확인. workflow YAML을 PyYAML로 파싱해 구조 검증(PASS). artifact upload/cron schedule은 추가하지 않음. Notebook에 STEP 22 3-Cell 추가(기존 STEP 03~21 미수정, Code Cell은 GitHub Actions를 실행하지 않고 파일 존재 여부만 확인). `git add`/`commit`("Add manual GitHub Actions workflow for STEP 22")/`push`로 practice 저장소에 반영(교육용 원본 저장소에는 commit/push 없음). workflow 작성 및 push만으로 STEP 22를 DONE 처리하지 않으며, 사용자가 GitHub Actions에서 Run workflow를 직접 실행해 성공을 확인한 뒤에만 DONE 처리 예정 — 현재 STEP 22는 `IN_PROGRESS` 유지.
 
@@ -182,4 +194,4 @@ where.exe python
 - 프로젝트 루트 경로: `C:\dev\claude-code-agent-course-practice` (2026-09-23 저장소 이관 이후 현재 경로. 이관 전에는 `C:\dev\claude-code-agent-course\chapter11\ax-job-agent`였음 — 아래 "Repository migration" 항목 참고)
 - Git 브랜치: `main` (practice 저장소의 기본 브랜치. 이관 전 원본 저장소에서는 `ax-job-agent` 브랜치를 사용했음)
 - STEP 05에서 확인된 사실: jobkorea 검색 결과 목록(list) 화면에는 `posted_date`(등록일)와 `closing_date`(마감일) 정보가 존재하지 않음. 이 두 컬럼은 상세 페이지(`job_url`)에 들어가야 확인 가능하며, 상세 페이지 순회는 STEP 05 범위 밖이라 이번 STEP에서는 `None`으로 남겨둠.
-- `src/`, `data/`, `reports/`, `.env.example`, `.gitignore`, `requirements.txt`, `main.py`는 아직 생성되지 않은 "예정" 항목 (자세한 내용은 `PROJECT_SPEC.md` 6번 참고).
+- (2026-09-23 기준) `src/`, `data/`, `reports/`, `.env.example`, `.gitignore`, `requirements.txt`, `main.py`, `.github/workflows/`는 모두 생성 완료된 상태입니다. 아래 "예정" 표기는 이 프로젝트 초기(STEP 00~02) 시점의 기록이며, 현재는 `PROJECT_SPEC.md` 6번 대신 이 파일의 요약/체크리스트를 기준으로 삼으세요.

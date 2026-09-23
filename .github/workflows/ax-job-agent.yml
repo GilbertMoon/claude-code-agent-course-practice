@@ -7,6 +7,14 @@ jobs:
   run-agent:
     runs-on: ubuntu-latest
 
+    env:
+      SEND_SLACK: "false"
+      SEND_GMAIL: "false"
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      GMAIL_ADDRESS: ${{ secrets.GMAIL_ADDRESS }}
+      GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+      GMAIL_TO: ${{ secrets.GMAIL_TO }}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
