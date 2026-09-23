@@ -17,12 +17,12 @@
 - **마지막 작업일**: 2026-09-23
 - **마지막 완료 STEP**: STEP 21 Git 저장 / commit / push
 - **현재 STEP**: STEP 22 GitHub Actions 수동 실행
-- **현재 상태**: 다음 작업 대기 (NOT_STARTED)
+- **현재 상태**: IN_PROGRESS
 - **STEP 20 완료 근거**: 사용자가 Notebook STEP 20 Code Cell을 직접 실행하여 프로젝트 구조 정상, `py_compile` 4개 파일 PASS, `import main` 성공, `new_jobs.csv` shape `(5, 9)`, 필수 컬럼 9개 PASS, `job_url` 중복 0/결측 0, Markdown 보고서 존재, `.env`/`.venv` gitignore 정상, 비밀정보 하드코딩 검사 PASS, Slack/Gmail/OpenAI 실제 호출 없음을 모두 확인함
 - **STEP 21 완료 근거**: `requirements.txt` 신규 생성(핵심 패키지 6개), 비밀정보/gitignore 최종 점검 PASS, practice 저장소 `main` 브랜치에 commit(`590d23f`) 및 push 성공(`2e7c98a..590d23f`), push 후 `git status` clean, `git remote -v`가 `GilbertMoon/claude-code-agent-course-practice`만 가리킴을 확인함. 교육용 원본 저장소에는 commit/push 없음.
-- **다음 작업**: STEP 22 GitHub Actions 수동 실행(`workflow_dispatch`)은 이번 작업 범위 밖이며 별도 진행 예정.
-- **다음 작업 위치**: (STEP 22 진행 시) `.github/workflows/`, `docs/PROGRESS.md`
-- **완료 기준**: (STEP 22) `workflow_dispatch`로 GitHub Actions에서 수동 실행이 성공(success)으로 완료될 것
+- **다음 작업**: `.github/workflows/ax-job-agent.yml`(수동 실행 전용, `workflow_dispatch`만 사용)을 작성하고 practice 저장소에 push한다. 사용자가 GitHub 웹에서 Actions → AX Job Agent → Run workflow를 직접 실행하여 성공 여부를 확인해야 STEP 22를 `DONE` 처리한다.
+- **다음 작업 위치**: `.github/workflows/ax-job-agent.yml`, `notebooks/ax_job_pipeline.ipynb`의 STEP 22 Cell, `docs/PROGRESS.md`
+- **완료 기준**: 사용자가 GitHub Actions에서 `workflow_dispatch`로 수동 실행하여 성공(success)으로 완료됨을 직접 확인할 것 (Claude Code는 Actions를 직접 실행하지 않음)
 
 ---
 
@@ -32,7 +32,7 @@ STEP 22 - GitHub Actions 수동 실행
 
 ## 현재 상태
 
-NOT_STARTED
+IN_PROGRESS
 
 (상태 값: `NOT_STARTED` / `IN_PROGRESS` / `DONE` 중 하나)
 
@@ -44,12 +44,6 @@ STEP 21 완료 — Git 저장 / commit / push (Claude Code가 터미널에서 �
 - `git add` → `git commit`(`590d23f`) → `git push origin main` 성공(`2e7c98a..590d23f`)
 - push 후 `git status` clean, `git remote -v`가 `GilbertMoon/claude-code-agent-course-practice`만 가리킴을 확인
 - 교육용 원본 저장소(`GilbertMoon/claude-code-agent-course`)에는 commit/push 없음
-
-- 프로젝트 구조 정상, `main.py`/`analyzer.py`/`reporter.py`/`notifier.py` `py_compile` PASS
-- `import main` 성공, `new_jobs.csv` shape `(5, 9)`, 필수 컬럼 9개 PASS
-- `job_url` 중복 0건 / 결측 0건, Markdown 보고서 존재
-- `.env`/`.venv` git ignore 정상, 비밀정보 하드코딩 검사 PASS
-- Slack/Gmail/OpenAI 실제 호출 없음 확인
 
 ## STEP 21 완료 세부 내용 (기록용)
 
@@ -81,15 +75,28 @@ Notebook에 STEP 21의 3-Cell(작업 계획 / 코드 / 결과 해석)을 추가�
 
 ## 다음 작업
 
-STEP 21이 완료되어 STEP 22(GitHub Actions 수동 실행)로 넘어갈 수 있습니다. 이번 작업 범위에서는 STEP 22를 구현하지 않았으며, `.github/workflows` 생성/GitHub Secrets 등록/실행은 모두 다음 작업으로 남겨둡니다.
+STEP 21이 완료되어 STEP 22(GitHub Actions 수동 실행)로 넘어왔습니다. `.github/workflows/ax-job-agent.yml`을 신규 생성했습니다. `workflow_dispatch`만 트리거로 사용했고(cron schedule은 STEP 24에서 진행), `ubuntu-latest` runner에서 `actions/checkout@v4` → `actions/setup-python@v5`(Python 3.12) → `pip install --upgrade pip` → `pip install -r requirements.txt` → `python main.py` 순서로 실행하도록 작성했습니다.
+
+사전 점검한 내용:
+
+- `main.py`는 `Path(__file__).resolve().parent` 기준 상대 경로만 사용하고 Windows 절대경로 하드코딩이 없어 Ubuntu runner에서도 그대로 동작함(수정 불필요).
+- `load_dotenv(ENV_PATH)`는 `.env` 파일이 없어도 예외 없이 `False`만 반환함을 실제로 확인함 — Actions runner에 `.env`가 없어도(gitignore 대상이라 저장소에 없음) `main.py`가 실패하지 않음. `.env`를 workflow에서 새로 만들지 않음.
+- `SEND_SLACK=False`/`SEND_GMAIL=False`가 그대로 유지되어 있어 Secrets 등록 없이도 CSV 읽기/분석/보고서 생성까지는 성공해야 함(Secrets 등록은 STEP 23에서 진행).
+- `data/processed/new_jobs.csv`, `requirements.txt`, `main.py`가 모두 Git에 커밋되어 있어 Actions의 `checkout` 이후 그대로 사용 가능함을 `git ls-files`로 확인함.
+- workflow YAML을 PyYAML로 파싱하여 `name`/`on`(`workflow_dispatch`)/`jobs.run-agent.runs-on`/`steps` 구조가 정상임을 확인함(PyYAML이 `on:` 키를 YAML 1.1 규칙에 따라 boolean `true`로 표시하는 것은 파싱 라이브러리의 통상적인 동작이며, GitHub Actions 자체 파서는 `on:`을 정상적인 트리거 키로 해석함 — 실제 워크플로 문법에는 문제 없음).
+- artifact upload, cron schedule, GitHub Secrets 등록은 이번 STEP에서 추가하지 않음.
+
+Notebook에 STEP 22의 3-Cell(작업 계획 / 코드 / 결과 해석)을 추가했습니다. 기존 STEP 03~21은 수정하지 않았습니다. Code Cell은 GitHub Actions를 실제로 실행하지 않고 workflow 파일/`requirements.txt`/`main.py`/`new_jobs.csv` 존재 여부만 확인합니다(직접 실행 검증 완료).
+
+변경 사항을 `git add` → `git commit`("Add manual GitHub Actions workflow for STEP 22") → `git push origin main`으로 practice 저장소에 반영했습니다(세부 커밋 SHA는 아래 갱신 이력 참고). 교육용 원본 저장소에는 어떤 commit/push도 하지 않았습니다.
 
 ### 실행 예정 위치
 
-(STEP 22 진행 시) `.github/workflows/`, `docs/PROGRESS.md`
+GitHub 웹(Actions → AX Job Agent → Run workflow) — **사용자가 직접 실행**
 
 ## 다음 작업 완료 기준
 
-(STEP 22) `workflow_dispatch` 트리거를 포함한 workflow 파일 작성 후, GitHub Actions 탭에서 수동 실행이 성공(success)으로 완료됨을 확인해야 합니다.
+사용자가 GitHub 웹에서 Actions → AX Job Agent → Run workflow를 직접 실행하여, 워크플로우 실행 로그가 성공(초록색 체크)으로 완료됨을 확인해야 STEP 22를 `DONE`으로 처리합니다. workflow 파일 작성과 commit/push만으로는 완료 처리하지 않습니다.
 
 ## 작업 재개 시 먼저 실행할 명령
 
@@ -130,13 +137,13 @@ where.exe python
 | STEP 19 | main.py 통합 | DONE | `main.py`에서 각 모듈 함수를 순서대로 호출하는 흐름 작성 완료, 입력 CSV를 `data/processed/new_jobs.csv` 고정 경로로 사용 — 사용자가 `python main.py`를 직접 실행하여 전체 5건/관련 5건/보고서 저장 완료/Slack·Gmail 생략을 확인 완료 |
 | STEP 20 | 로컬 전체 실행 검증 | DONE | 사용자가 Notebook STEP 20 Code Cell을 직접 실행하여 구조/문법/import/입력 데이터/main.py 구조/보고서/환경변수/보안/Slack·Gmail 호출 없음을 모두 확인 완료 |
 | STEP 21 | Git 저장 / Push | DONE | `requirements.txt` 생성, 비밀정보/gitignore 최종 점검 PASS, practice 저장소 `main` 브랜치에 commit(`590d23f`) 및 push 성공, working tree clean, 원격이 practice 저장소만임을 확인 |
-| STEP 22 | GitHub Actions 수동 실행 | NOT_STARTED | `workflow_dispatch`로 수동 실행 성공 |
+| STEP 22 | GitHub Actions 수동 실행 | IN_PROGRESS | `.github/workflows/ax-job-agent.yml`(`workflow_dispatch`, ubuntu-latest, Python 3.12, requirements.txt 설치, `python main.py`) 작성 및 push 완료 — 사용자의 GitHub Actions 수동 실행(Run workflow) 성공 확인 대기 중 |
 | STEP 23 | GitHub Secrets | NOT_STARTED | `GEMINI_API_KEY`, `SLACK_WEBHOOK_URL`, `GMAIL_USER`, `GMAIL_APP_PASSWORD` GitHub Secrets 등록 완료 |
 | STEP 24 | GitHub Actions 주간 자동 실행 | NOT_STARTED | `cron: "0 0 * * 1"` 스케줄 등록, 자동 실행 결과 확인 |
 
 ---
 
-## 갱신 이력 (최신이 위로)
+- **2026-09-23**: STEP 21(Git 저장/commit/push) `DONE` 확정 후 STEP 22(GitHub Actions 수동 실행)로 전환. `.github/workflows/ax-job-agent.yml` 신규 생성 — 트리거는 `workflow_dispatch`만 사용(cron 없음), `runs-on: ubuntu-latest`, `actions/checkout@v4` → `actions/setup-python@v5`(`python-version: "3.12"`) → `pip install --upgrade pip` → `pip install -r requirements.txt` → `python main.py` 순서로 단순하게 작성. `main.py`는 `Path(__file__)` 기반 상대경로만 사용해 Windows 하드코딩 없음을 확인하여 별도 수정 없음. `load_dotenv`가 `.env` 파일이 없을 때 예외 없이 `False`만 반환함을 실제 실행으로 재확인 — Actions runner에 `.env`가 없어도 `main.py`가 실패하지 않음(`.env`를 workflow에서 생성하지 않음). `SEND_SLACK=False`/`SEND_GMAIL=False` 유지로 Secrets 없이도 동작 가능, GitHub Secrets 등록은 이번 STEP에서 하지 않음(STEP 23 예정). `data/processed/new_jobs.csv`/`requirements.txt`/`main.py`가 모두 Git에 포함되어 있음을 `git ls-files`로 확인. workflow YAML을 PyYAML로 파싱해 구조 검증(PASS). artifact upload/cron schedule은 추가하지 않음. Notebook에 STEP 22 3-Cell 추가(기존 STEP 03~21 미수정, Code Cell은 GitHub Actions를 실행하지 않고 파일 존재 여부만 확인). `git add`/`commit`("Add manual GitHub Actions workflow for STEP 22")/`push`로 practice 저장소에 반영(교육용 원본 저장소에는 commit/push 없음). workflow 작성 및 push만으로 STEP 22를 DONE 처리하지 않으며, 사용자가 GitHub Actions에서 Run workflow를 직접 실행해 성공을 확인한 뒤에만 DONE 처리 예정 — 현재 STEP 22는 `IN_PROGRESS` 유지.
 
 - **2026-09-23**: STEP 21(Git 저장/commit/push) 완료 처리. `requirements.txt` 신규 생성(pandas/requests/beautifulsoup4/python-dotenv/openai/jupyter 6개, `.venv` 실제 설치 버전 고정), 커밋 전 안전성 최종 점검(`.env`/`.venv` gitignore 정상, `git check-ignore` 매칭 확인, `*.py`/`*.md`/`*.ipynb`/`*.json`/`*.csv`/`requirements.txt` 전체 비밀정보 grep PASS, `new_jobs.csv`는 공개 채용공고 5건만 포함 확인, `py_compile`/`import main` 재검사 PASS) 모두 통과. `git remote -v`로 원격이 오직 `GilbertMoon/claude-code-agent-course-practice`임을 커밋 전/push 직전 두 차례 재확인. `git add`로 `docs/PROGRESS.md`/`main.py`/`notebooks/ax_job_pipeline.ipynb`/`reports/weekly_ax_jobs_2026-09-23.md`/`data/processed/new_jobs.csv`/`requirements.txt` 6개 파일만 명시적으로 스테이징(`.env`/`.venv` 미포함 확인), `git commit`(SHA `590d23f`, 메시지 "Complete local AX Job Agent pipeline through STEP 20") 및 `git push origin main` 성공(`2e7c98a..590d23f`). push 후 `git status` clean, `git log --oneline -3`에 새 커밋 확인, `git remote -v` 최종 재확인. 교육용 원본 저장소(`GilbertMoon/claude-code-agent-course`)에는 어떤 commit/push도 하지 않음. Notebook에 STEP 21(Git 저장 및 원격 저장소 Push) 3-Cell 추가(기존 STEP 03~20 미수정), Code Cell은 실제 git 명령 없이 상태 확인만 수행하며 직접 실행 검증 완료. STEP 22(GitHub Actions 수동 실행)는 이번 작업 범위 밖으로 구현하지 않음.
 
