@@ -45,33 +45,17 @@ REQUIRED_COLUMNS = {
 }
 
 
-def find_latest_input_csv(input_dir):
-    """input_dir 안에서 가장 최근에 수정된 CSV 파일 하나를 찾아 반환합니다. 없으면 None."""
-    if not input_dir.exists():
-        return None
-
-    csv_files = sorted(
-        input_dir.glob("*.csv"),
-        key=lambda p: p.stat().st_mtime,
-        reverse=True,
-    )
-    return csv_files[0] if csv_files else None
-
-
 def main():
     print("=== AX Job Agent ===\n")
 
     # 1. .env 로드
     load_dotenv(ENV_PATH)
 
-    # 2. 입력 CSV 확인
-    input_dir = PROJECT_ROOT / "data" / "processed"
-    input_path = find_latest_input_csv(input_dir)
+    # 2. 입력 CSV 확인 (data/processed/new_jobs.csv 고정 경로)
+    input_path = PROJECT_ROOT / "data" / "processed" / "new_jobs.csv"
 
-    if input_path is None:
-        print("실행 가능한 입력 CSV가 없습니다.")
-        print(f"확인한 경로: {input_dir}")
-        print("data/processed/ 아래에 채용공고 CSV 파일을 준비한 뒤 다시 실행하세요.")
+    if not input_path.exists():
+        print("data/processed/new_jobs.csv 파일이 없습니다.")
         return
 
     print("입력 파일:", input_path.name)

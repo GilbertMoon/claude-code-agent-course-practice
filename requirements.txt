@@ -1,0 +1,6 @@
+pandas==3.0.6
+requests==2.34.2
+beautifulsoup4==4.15.0
+python-dotenv==1.2.3
+openai==3.19.0
+jupyter==1.1.1

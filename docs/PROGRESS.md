@@ -15,18 +15,19 @@
 ## 요약 (한눈에 보기)
 
 - **마지막 작업일**: 2026-09-23
-- **마지막 완료 STEP**: STEP 18 src 모듈화
-- **현재 STEP**: STEP 19 main.py 작성
+- **마지막 완료 STEP**: STEP 20 로컬 전체 검증
+- **현재 STEP**: STEP 21 Git 저장 / commit / push
 - **현재 상태**: IN_PROGRESS
-- **다음 작업**: `main.py`(프로젝트 루트)를 실행 관리자로 검증한다. Notebook에서 `import main`으로 존재 및 `main.main` callable 여부만 확인하고, 실제 `python main.py` 실행은 사용자가 터미널에서 직접 수행한다.
-- **다음 작업 위치**: `main.py`, `notebooks/ax_job_pipeline.ipynb`
-- **완료 기준**: 사용자가 Notebook에서 `import main` 성공을 확인하고, 터미널에서 `python main.py`를 직접 실행하여 보고서 저장 성공과 Slack/Gmail 자동 발송이 없음을 확인할 것 (STEP 19는 이 확인 전까지 `IN_PROGRESS` 유지)
+- **STEP 20 완료 근거**: 사용자가 Notebook STEP 20 Code Cell을 직접 실행하여 프로젝트 구조 정상, `py_compile` 4개 파일 PASS, `import main` 성공, `new_jobs.csv` shape `(5, 9)`, 필수 컬럼 9개 PASS, `job_url` 중복 0/결측 0, Markdown 보고서 존재, `.env`/`.venv` gitignore 정상, 비밀정보 하드코딩 검사 PASS, Slack/Gmail/OpenAI 실제 호출 없음을 모두 확인함
+- **다음 작업**: `requirements.txt` 생성, 커밋 전 안전성(비밀정보/gitignore) 최종 점검 후 practice 저장소(`GilbertMoon/claude-code-agent-course-practice`)에 commit/push한다. 교육용 원본 저장소(`GilbertMoon/claude-code-agent-course`)에는 어떤 경우에도 commit/push하지 않는다.
+- **다음 작업 위치**: 프로젝트 루트(`requirements.txt`), `docs/PROGRESS.md`, `notebooks/ax_job_pipeline.ipynb`, 터미널 Git 명령
+- **완료 기준**: `requirements.txt` 생성(핵심 직접 의존성만), 비밀정보 검사 PASS, `git add`/`commit`/`push`가 practice 저장소 `main` 브랜치에 성공하고 `git status`가 clean, `git remote -v`가 practice 저장소만 가리킴을 확인할 것
 
 ---
 
 ## 현재 STEP
 
-STEP 19 - main.py 작성
+STEP 21 - Git 저장 / commit / push
 
 ## 현재 상태
 
@@ -36,27 +37,47 @@ IN_PROGRESS
 
 ## 마지막 완료 작업
 
-STEP 18 완료 — src 모듈화 (사용자 직접 실행 및 확인 완료).
+STEP 20 완료 — 로컬 전체 검증 (사용자 직접 실행 및 확인 완료).
 
-- `src/analyzer.py`, `src/reporter.py`, `src/notifier.py`, `src/__init__.py` 존재 확인
-- Notebook에서 `sys.path` 추가 후 `from src.analyzer import ...` 등 import 성공 확인
-- `filter_related_jobs()` 결과가 기존과 동일: 5건/5건, `job_url` 집합 비교 `True`
-- `build_markdown_report()` 정상 동작 확인
-- `send_slack_message()`/`send_gmail()` 실제 재발송 없음 확인
+- 프로젝트 구조 정상, `main.py`/`analyzer.py`/`reporter.py`/`notifier.py` `py_compile` PASS
+- `import main` 성공, `new_jobs.csv` shape `(5, 9)`, 필수 컬럼 9개 PASS
+- `job_url` 중복 0건 / 결측 0건, Markdown 보고서 존재
+- `.env`/`.venv` git ignore 정상, 비밀정보 하드코딩 검사 PASS
+- Slack/Gmail/OpenAI 실제 호출 없음 확인
 
 ## 다음 작업
 
-프로젝트 루트에 `main.py`를 새로 생성했습니다. `main.py`는 세부 기능을 직접 구현하지 않고, `src.analyzer.filter_related_jobs`, `src.reporter.build_markdown_report`, `src.notifier.send_slack_message`/`send_gmail`을 순서대로 호출하는 **실행 관리자(orchestrator)** 역할만 합니다. `SEND_SLACK = False`, `SEND_GMAIL = False`로 고정하여 이번 STEP에서는 외부 전송이 자동 실행되지 않으며, OpenAI는 import조차 하지 않습니다. `data/processed/` 폴더가 현재 존재하지 않아(실제 확인함) 입력 CSV가 없는 상태이므로, `main()`은 "실행 가능한 입력 CSV가 없습니다."를 출력하고 안전하게 종료하도록 작성했습니다 (가짜 데이터 생성 없음).
+STEP 20이 사용자 직접 확인으로 완료되어 STEP 21(Git 저장 / commit / push)로 넘어갑니다. 원격 저장소 안전성을 최우선으로 확인했습니다: `git remote -v` 결과 `origin`이 오직 `https://github.com/GilbertMoon/claude-code-agent-course-practice.git`만 가리킴을 확인했고, 교육용 원본 저장소(`GilbertMoon/claude-code-agent-course`)는 이번 작업에서 전혀 건드리지 않았습니다.
 
-> Notebook에 STEP 19의 3-Cell(작업 계획 / 코드 / 결과 해석)을 작성했습니다. Code Cell은 `sys.path`에 프로젝트 루트를 추가한 뒤 `import main`만 수행하며, **`main.main()`은 호출하지 않습니다.** 실제 `python main.py` 실행은 사용자가 터미널에서 직접 수행해야 합니다.
+`requirements.txt`를 프로젝트 루트에 신규 생성했습니다. `pip freeze` 전체가 아니라, 실제 코드/Notebook에서 직접 사용하는 핵심 패키지 6개만 `.venv`에 설치된 실제 버전으로 고정했습니다:
+
+```
+pandas==3.0.6
+requests==2.34.2
+beautifulsoup4==4.15.0
+python-dotenv==1.2.3
+openai==3.19.0
+jupyter==1.1.1
+```
+
+커밋 전 최종 안전성 점검 결과(모두 PASS):
+
+- `data/processed/new_jobs.csv`: 잡코리아 공개 채용공고 5건(회사명/제목/경력/지역/날짜/공고 URL/검색어/수집시각)만 포함, 개인정보·비밀정보 없음 확인 — Git에 포함.
+- `reports/weekly_ax_jobs_2026-09-23.md`: 통계·관련 공고 목록만 포함, 비밀정보 없음 확인 — 대표 보고서 1개로 Git에 포함.
+- `.gitignore`: `.env`/`.venv/`/`__pycache__/`/`*.pyc`/`.ipynb_checkpoints/` 포함, `git check-ignore -v .env`/`.venv` 모두 정상 매칭.
+- 비밀정보 검사: `*.py`/`*.md`/`*.ipynb`/`*.json`/`*.csv`/`requirements.txt` 전체 대상 OpenAI Key/Gemini Key/Slack Webhook/Gmail 앱 비밀번호 패턴 grep — 하드코딩된 실제 값 없음(PASS).
+- `.env.example`: 실제 값 없이 변수명만 존재(Gemini 항목은 삭제하지 않고 그대로 유지) 확인.
+- `python -m py_compile` 4개 파일 재검사 PASS, `import main` 재검사 PASS(`python main.py` 재실행은 하지 않음 — 이미 사용자가 STEP 19/20에서 확인 완료).
+
+Notebook에 STEP 21의 3-Cell(작업 계획 / 코드 / 결과 해석)을 추가했습니다. 기존 STEP 03~20은 수정하지 않았습니다. Code Cell에는 실제 `git commit`/`push`를 실행하지 않고, `project_root`/`requirements.txt`/`.gitignore`/`new_jobs.csv`/대표 보고서 존재 여부만 확인하는 상태 점검 코드만 넣었습니다 — 실제 git 명령은 Claude Code가 터미널에서 수행했습니다.
 
 ### 실행 예정 위치
 
-`main.py` (터미널에서 `python main.py`), `notebooks/ax_job_pipeline.ipynb`의 STEP 19 Code Cell (import 확인용)
+프로젝트 루트(`requirements.txt`, 터미널 Git 명령), `notebooks/ax_job_pipeline.ipynb`의 STEP 21 Cell
 
 ## 다음 작업 완료 기준
 
-사용자가 Notebook에서 STEP 19 Code Cell을 실행해 `import main` 성공과 `main.main` callable 여부를 확인하고, 터미널에서 직접 `python main.py`를 실행하여 (data/processed/에 CSV를 준비했다면) 보고서 저장 성공, 또는 (CSV가 없다면) "실행 가능한 입력 CSV가 없습니다." 메시지가 안전하게 출력되는 것을 확인하며, Slack/Gmail이 자동으로 발송되지 않았음을 확인해야 합니다. 파일 생성 및 Claude Code의 사전 검증(문법 검사, import 검사)만으로 완료 처리하지 않으며 STEP 19는 `IN_PROGRESS`로 유지합니다.
+`git add`/`commit`/`push`가 practice 저장소 `main` 브랜치에 성공하고, push 후 `git status`가 clean, `git remote -v`가 여전히 practice 저장소만 가리키며, 교육용 원본 저장소에는 어떤 commit/push도 없어야 STEP 21을 `DONE`으로 처리합니다.
 
 ## 작업 재개 시 먼저 실행할 명령
 
@@ -94,9 +115,9 @@ where.exe python
 | STEP 16 | Gmail 발송 | DONE | Gmail SMTP 연결/인증/`send_message()` 성공, 실제 수신함 도착 확인(제목/한글/본문 정상) — 사용자가 직접 실행하여 확인 완료 |
 | STEP 17 | 함수화 | DONE | `filter_related_jobs()`, `build_markdown_report()`, `send_slack_message()`, `send_gmail()` 함수 정의 및 앞 2개 함수 실행 검증(5/5/True) — 사용자가 직접 실행하여 확인 완료 |
 | STEP 18 | src 구조화 | DONE | `src/analyzer.py`/`reporter.py`/`notifier.py` 분리, import 및 기본 동작(5/5/True) 확인 — 사용자가 직접 실행하여 확인 완료 |
-| STEP 19 | main.py 통합 | IN_PROGRESS | `main.py`에서 각 모듈 함수를 순서대로 호출하는 흐름 작성 완료, `import main`만 확인 — 실제 `python main.py` 실행 및 확인 대기 중 |
-| STEP 20 | 로컬 전체 실행 검증 | NOT_STARTED | `python main.py` 실행 시 전체 파이프라인이 오류 없이 끝까지 완료 |
-| STEP 21 | Git 저장 / Push | NOT_STARTED | `git status`/`git diff`로 민감정보 미포함 확인 후 add/commit/push 완료 |
+| STEP 19 | main.py 통합 | DONE | `main.py`에서 각 모듈 함수를 순서대로 호출하는 흐름 작성 완료, 입력 CSV를 `data/processed/new_jobs.csv` 고정 경로로 사용 — 사용자가 `python main.py`를 직접 실행하여 전체 5건/관련 5건/보고서 저장 완료/Slack·Gmail 생략을 확인 완료 |
+| STEP 20 | 로컬 전체 실행 검증 | DONE | 사용자가 Notebook STEP 20 Code Cell을 직접 실행하여 구조/문법/import/입력 데이터/main.py 구조/보고서/환경변수/보안/Slack·Gmail 호출 없음을 모두 확인 완료 |
+| STEP 21 | Git 저장 / Push | IN_PROGRESS | `requirements.txt` 생성, 비밀정보/gitignore 최종 점검 PASS — practice 저장소 `main` 브랜치 commit/push 진행 중 |
 | STEP 22 | GitHub Actions 수동 실행 | NOT_STARTED | `workflow_dispatch`로 수동 실행 성공 |
 | STEP 23 | GitHub Secrets | NOT_STARTED | `GEMINI_API_KEY`, `SLACK_WEBHOOK_URL`, `GMAIL_USER`, `GMAIL_APP_PASSWORD` GitHub Secrets 등록 완료 |
 | STEP 24 | GitHub Actions 주간 자동 실행 | NOT_STARTED | `cron: "0 0 * * 1"` 스케줄 등록, 자동 실행 결과 확인 |
@@ -104,6 +125,12 @@ where.exe python
 ---
 
 ## 갱신 이력 (최신이 위로)
+
+- **2026-09-23**: 사용자가 Notebook STEP 20 Code Cell을 직접 실행하여 프로젝트 구조 정상, `py_compile` 4개 파일 PASS, `import main` 성공, `new_jobs.csv` shape `(5, 9)`, 필수 컬럼 PASS, `job_url` 중복 0/결측 0, 보고서 존재, `.env`/`.venv` ignore 정상, 비밀정보 검사 PASS, Slack/Gmail/OpenAI 실제 호출 없음을 확인 — STEP 20 `DONE` 처리. STEP 21(Git 저장/commit/push)로 전환. `git remote -v`로 원격이 오직 `GilbertMoon/claude-code-agent-course-practice`임을 최우선 확인(교육용 원본 저장소는 건드리지 않음). `requirements.txt` 신규 생성(pandas/requests/beautifulsoup4/python-dotenv/openai/jupyter 6개 핵심 패키지만, `.venv` 실제 설치 버전으로 고정 — `pip freeze` 전체 사용 안 함). 커밋 전 최종 점검: `data/processed/new_jobs.csv`(공개 채용공고 5건, 개인정보/비밀정보 없음)와 `reports/weekly_ax_jobs_2026-09-23.md`(비밀정보 없음)를 Git 포함 대상으로 확정, `.gitignore`(`.env`/`.venv/` 등) 및 `git check-ignore` 정상, `*.py`/`*.md`/`*.ipynb`/`*.json`/`*.csv`/`requirements.txt` 전체 대상 비밀정보 grep PASS, `.env.example` 실제 값 없음 확인, `py_compile`/`import main` 재검사 PASS. Notebook에 STEP 21(Git 저장 및 원격 저장소 Push) 3-Cell 신규 추가(기존 STEP 03~20 미수정), Code Cell은 상태 확인만 하고 실제 git 명령은 포함하지 않음. 이어서 `git add`/`commit`/`push`를 practice 저장소 `main` 브랜치에 대해 터미널에서 직접 수행(세부 결과는 아래 최신 항목 참고).
+
+- **2026-09-23**: 사용자가 터미널에서 `python main.py`를 직접 실행하여 전체 공고 5건/관련 공고 5건, `reports/weekly_ax_jobs_2026-09-23.md` 저장 완료, Slack/Gmail 전송 생략, 파이프라인 정상 종료를 확인 — STEP 19 `DONE` 처리. STEP 20(로컬 전체 실행 검증)으로 전환. Claude Code가 GitHub Actions 이전 전체 점검을 수행: 프로젝트 구조(`requirements.txt` 제외 모두 존재), `py_compile` 4개 파일 전체 통과, `import main`/`src.analyzer`/`src.reporter`/`src.notifier` 4개 import 전체 성공(자동 실행 없음), `data/processed/new_jobs.csv` shape `(5, 9)`·필수 컬럼 9개 PASS·`job_url` 중복 0/결측 0, `main.py` 구조(`PROJECT_ROOT`, 고정 입력 경로, 필수 컬럼 검사, analyzer/reporter 순서 호출, `SEND_SLACK=False`/`SEND_GMAIL=False`, OpenAI 미사용, `if __name__` 구조) 전체 확인, 보고서 파일 존재 및 4개 핵심 섹션 포함 확인, `.env` 6개 키 존재(bool만 확인, 값 미출력)·`.env.example`은 빈 값만 존재, `.gitignore`에 `.env`/`.venv/` 포함 및 `git check-ignore` 정상 확인, 소스/Notebook/문서 전체에 실제 비밀값 하드코딩 없음(grep 기반 PASS), Slack/Gmail/OpenAI 실제 호출 없음. `requirements.txt`는 아직 없어 STEP 21/22 전 필요 항목으로 별도 기록. Notebook에 STEP 20(로컬 전체 검증) 3-Cell 신규 추가(기존 STEP 03~19는 수정하지 않음), Code Cell은 외부 서비스 호출 없이 로컬 검증만 수행. git add/commit/push 없음. 사용자의 Notebook STEP 20 Code Cell 직접 실행 확인 전까지 STEP 20은 `IN_PROGRESS` 유지.
+
+- **2026-09-23**: practice 저장소(`C:\dev\claude-code-agent-course-practice`) 기준으로 STEP 19 상태 재점검. `.venv`(Python 3.12.10) 및 pandas/requests/bs4/dotenv/openai import 정상, 주요 파일/폴더 존재 확인, `.gitignore`에 `.env` 포함 재확인. `data/processed/` 폴더가 없어 Notebook STEP 05~09에서 이전에 실제로 수집·검증한 `new_jobs` 5건(GS리테일/에스코어/㈜NAVER×2/㈜슈프리마, Notebook 저장 출력의 실제 값)을 그대로 `data/processed/new_jobs.csv`(5행/9컬럼)로 저장(가짜 데이터 생성 없음). `main.py`의 입력 CSV 결정 로직을 "최신 CSV 자동 탐색"에서 `data/processed/new_jobs.csv` 고정 경로로 최소 수정(파일 없으면 "data/processed/new_jobs.csv 파일이 없습니다." 출력 후 안전 종료), 그 외 구조(필수 컬럼 9개, analyzer/reporter 호출, 보고서 저장, `SEND_SLACK=False`/`SEND_GMAIL=False`, OpenAI 미사용)는 유지. Notebook STEP 19의 기존 3-Cell 구조를 유지한 채 Code Cell에 `new_jobs` → CSV 저장 로직만 최소 추가하고 결과 해석 Markdown 갱신(`main.main()` 호출 없음). `python -m py_compile` 전체 통과, `import main` 성공(자동 실행 없음) — 모두 Claude Code 사전 검증. `python main.py` 실제 실행은 하지 않았으며 사용자 실행 대기 중이므로 STEP 19는 `IN_PROGRESS` 유지. Git commit/push 없음.
 
 - **2026-09-23**: 사용자가 STEP 18 Code Cell을 직접 실행하여 src 모듈 import 성공, `filter_related_jobs()`/`build_markdown_report()` 정상 동작(5/5/True), Slack/Gmail 재발송 없음을 확인 — STEP 18 `DONE` 처리. 프로젝트 루트에 `main.py` 신규 생성: `src.analyzer`/`src.reporter`/`src.notifier`를 import해 순서대로 호출하는 실행 관리자로 작성, `SEND_SLACK=False`/`SEND_GMAIL=False` 고정, OpenAI 미사용(import 없음), `data/processed/*.csv` 중 최신 파일을 입력으로 찾되 폴더 자체가 없음을 실제 확인하여(파일 구조 검증 완료) "실행 가능한 입력 CSV가 없습니다." 안내 후 안전 종료하도록 처리(가짜 데이터 생성 없음), 필수 컬럼 9개 검사 및 `RELATED_KEYWORDS`를 STEP 11과 동일하게 유지. `python -m py_compile main.py` 통과, `import main` 성공 및 `main.main` callable 확인(모두 Claude Code가 사전 검증, `main.main()`은 호출하지 않음). Notebook에 STEP 19(main.py 작성) 3-Cell 추가 — Code Cell은 `import main`만 수행하고 `main.main()` 호출 없음. 사용자의 Notebook 실행 및 터미널에서의 실제 `python main.py` 실행 확인이 필요하여 STEP 19 상태는 `IN_PROGRESS`.
 
