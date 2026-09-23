@@ -15,20 +15,20 @@
 ## 요약 (한눈에 보기)
 
 - **마지막 작업일**: 2026-09-23
-- **마지막 완료 STEP**: STEP 22 GitHub Actions 수동 실행
-- **현재 STEP**: STEP 23 GitHub Secrets 등록
+- **마지막 완료 STEP**: STEP 23 GitHub Secrets 등록
+- **현재 STEP**: STEP 24 주간 자동 실행 + Slack/Gmail 발송 활성화
 - **현재 상태**: IN_PROGRESS
-- **STEP 21 완료 근거**: `requirements.txt` 신규 생성(핵심 패키지 6개), 비밀정보/gitignore 최종 점검 PASS, practice 저장소 `main` 브랜치에 commit(`590d23f`) 및 push 성공(`2e7c98a..590d23f`), push 후 `git status` clean, `git remote -v`가 `GilbertMoon/claude-code-agent-course-practice`만 가리킴을 확인함. 교육용 원본 저장소에는 commit/push 없음.
-- **STEP 22 완료 근거**: 사용자가 GitHub 웹에서 Actions → AX Job Agent → Run workflow를 직접 실행하여 `workflow_dispatch` 수동 실행이 Success로 완료됨을 확인함(`run-agent` job 성공, `python main.py` 정상 실행). `SEND_SLACK=False`/`SEND_GMAIL=False`이므로 Slack/Gmail 실제 발송은 의도적으로 생략됨.
-- **다음 작업**: 로컬 `.env`에 있던 6개 값(`OPENAI_API_KEY`/`OPENAI_MODEL`/`SLACK_WEBHOOK_URL`/`GMAIL_ADDRESS`/`GMAIL_APP_PASSWORD`/`GMAIL_TO`)을 GitHub Repository Secrets로 사용자가 직접 등록한다. `main.py`는 `SEND_SLACK`/`SEND_GMAIL` 환경변수로 켜고 끌 수 있도록 수정했고(기본값 `false`), workflow에는 Slack/Gmail Secret 연결 구조만 준비했다(기본값 `"false"` 유지, 실제 발송 강제하지 않음).
-- **다음 작업 위치**: GitHub 웹 Settings → Secrets and variables → Actions (사용자가 직접 등록), `docs/PROGRESS.md`
-- **완료 기준**: 사용자가 GitHub 웹에서 6개 Repository Secret을 모두 실제 등록 완료할 것 (Claude Code는 Secret 값을 직접 다루거나 출력하지 않음)
+- **STEP 22 완료 근거**: 사용자가 GitHub 웹에서 Actions → AX Job Agent → Run workflow를 직접 실행하여 `workflow_dispatch` 수동 실행이 Success로 완료됨을 확인함(`run-agent` job 성공, `python main.py` 정상 실행). 당시 `SEND_SLACK=False`/`SEND_GMAIL=False`이므로 Slack/Gmail 실제 발송은 의도적으로 생략됨.
+- **STEP 23 완료 근거**: 사용자가 GitHub 웹 Settings → Secrets and variables → Actions에서 `OPENAI_API_KEY`/`OPENAI_MODEL`/`SLACK_WEBHOOK_URL`/`GMAIL_ADDRESS`/`GMAIL_APP_PASSWORD`/`GMAIL_TO` 6개 Repository Secret을 모두 직접 등록 완료함을 확인. Claude Code는 실제 Secret 값을 읽거나 출력하지 않았음.
+- **다음 작업**: `.github/workflows/ax-job-agent.yml`에 `schedule`(매주 월요일 09:00 KST = `cron: "0 0 * * 1"` UTC) 트리거를 추가하고(`workflow_dispatch`는 유지), `SEND_SLACK`/`SEND_GMAIL`을 `"true"`로 변경해 실제 Slack/Gmail 발송을 활성화했다. 사용자가 GitHub 웹에서 Run workflow를 1회 직접 실행하여 Action 성공 + 실제 Slack 메시지/Gmail 메일 수신까지 확인해야 STEP 24를 `DONE` 처리한다.
+- **다음 작업 위치**: GitHub 웹(Actions → AX Job Agent → Run workflow) — **사용자가 직접 실행**, `docs/PROGRESS.md`
+- **완료 기준**: 사용자가 Run workflow를 직접 실행하여 (1) Action Success, (2) 실제 Slack 메시지 수신, (3) 실제 Gmail 메일 수신, (4) 로그에 Secret 값 노출 없음을 모두 확인할 것
 
 ---
 
 ## 현재 STEP
 
-STEP 23 - GitHub Secrets 등록
+STEP 24 - 주간 자동 실행 + Slack/Gmail 발송 활성화
 
 ## 현재 상태
 
@@ -38,12 +38,11 @@ IN_PROGRESS
 
 ## 마지막 완료 작업
 
-STEP 22 완료 — GitHub Actions 수동 실행 (사용자 직접 실행 및 확인 완료).
+STEP 23 완료 — GitHub Secrets 등록 (사용자 직접 등록 및 확인 완료).
 
-- 사용자가 GitHub 웹에서 Actions → AX Job Agent → Run workflow를 직접 실행
-- `workflow_dispatch` 수동 실행 Status: Success, `run-agent` job 성공 확인
-- Actions에서 `python main.py`가 정상 실행됨
-- `SEND_SLACK=False`/`SEND_GMAIL=False`로 Slack/Gmail 실제 발송은 의도적으로 생략됨
+- 사용자가 GitHub 웹 Settings → Secrets and variables → Actions에서 6개 Repository Secret 직접 등록
+- `OPENAI_API_KEY`, `OPENAI_MODEL`, `SLACK_WEBHOOK_URL`, `GMAIL_ADDRESS`, `GMAIL_APP_PASSWORD`, `GMAIL_TO` 등록 완료 확인
+- Claude Code는 실제 Secret 값을 읽거나 출력하지 않음
 
 ## STEP 21 완료 세부 내용 (기록용)
 
@@ -77,34 +76,43 @@ Notebook에 STEP 21의 3-Cell(작업 계획 / 코드 / 결과 해석)을 추가�
 
 `.github/workflows/ax-job-agent.yml`을 신규 생성했습니다. `workflow_dispatch`만 트리거로 사용했고(cron schedule은 STEP 24 예정), `ubuntu-latest` runner에서 `actions/checkout@v4` → `actions/setup-python@v5`(Python 3.12) → `pip install --upgrade pip` → `pip install -r requirements.txt` → `python main.py` 순서로 실행하도록 작성했습니다. `main.py`는 `Path(__file__)` 기준 상대 경로만 사용해 Windows 하드코딩이 없음을 확인, `load_dotenv`가 `.env` 없이도 예외 없이 동작함을 확인, `data/processed/new_jobs.csv`/`requirements.txt`/`main.py`가 Git에 포함되어 있음을 확인했습니다. 사용자가 GitHub 웹에서 Run workflow를 직접 실행하여 Success를 확인 완료 — STEP 22 `DONE` 처리.
 
+## STEP 23 완료 세부 내용 (기록용)
+
+`main.py`의 `SEND_SLACK`/`SEND_GMAIL`을 환경변수 기반(`os.getenv(..., "false").lower() == "true"`, 기본값 항상 `false`)으로 최소 수정했고, `.github/workflows/ax-job-agent.yml`의 `run-agent` job에 Slack/Gmail Secret 연결 구조(`env` 블록)를 준비했습니다. 사용자가 GitHub 웹에서 6개 Repository Secret을 모두 실제 등록 완료 — STEP 23 `DONE` 처리.
+
 ## 다음 작업
 
-STEP 22가 완료되어 STEP 23(GitHub Secrets 등록)으로 넘어왔습니다. 로컬 `.env`에 있던 비밀정보를 GitHub Repository Secrets로 등록하고, Actions에서 필요할 때 환경변수로 전달할 수 있는 구조를 준비했습니다. **실제 Secret 값은 어디에도 읽거나 출력하지 않았습니다.**
+STEP 23이 완료되어 STEP 24(주간 자동 실행 + Slack/Gmail 발송 활성화)로 넘어왔습니다. `.github/workflows/ax-job-agent.yml`을 최소 수정했습니다.
 
-`main.py`를 최소 수정했습니다: `SEND_SLACK`/`SEND_GMAIL`을 하드코딩된 `False` 상수 대신 환경변수 기반으로 변경했습니다(`os.getenv("SEND_SLACK", "false").lower() == "true"` 방식, 기본값은 항상 `false`). 실제로 환경변수 없음/`"false"`/`"true"` 세 경우를 모두 실행해 `False`/`False`/`True`로 정확히 동작함을 확인했습니다. `main.py`의 Slack/Gmail 발송 분기(`if SEND_SLACK: ...`, `if SEND_GMAIL: ...`)는 이미 Secret이 없을 때 값을 출력하지 않고 "생략합니다" 메시지만 남기도록 되어 있어 별도 수정하지 않았습니다.
+`on` 트리거에 `schedule`을 추가했습니다(`workflow_dispatch`는 그대로 유지). `cron: "0 0 * * 1"`(매주 월요일 00:00 UTC = 매주 월요일 오전 9시 KST)로 설정하고 옆에 KST 환산 주석을 달았습니다. `workflow_dispatch`를 유지한 이유는 자동 실행 전 수동 테스트와, 문제 발생 시 수동 재실행을 모두 가능하게 하기 위해서입니다.
 
-`.github/workflows/ax-job-agent.yml`의 `run-agent` job에 `env` 블록을 추가했습니다: `SEND_SLACK: "false"`, `SEND_GMAIL: "false"`(기본값 유지, 이번 STEP에서 실제 발송을 강제하지 않음)와 `SLACK_WEBHOOK_URL`/`GMAIL_ADDRESS`/`GMAIL_APP_PASSWORD`/`GMAIL_TO`를 `${{ secrets.* }}`로 연결했습니다. `OPENAI_API_KEY`/`OPENAI_MODEL`은 `main.py`가 아직 사용하지 않으므로 불필요한 노출을 늘리지 않기 위해 workflow env에는 연결하지 않았습니다(Secret 등록 자체는 다음 확장 대비로 진행).
+`run-agent` job의 `env` 블록에서 `SEND_SLACK`/`SEND_GMAIL`을 `"false"`에서 `"true"`로 변경했습니다. `SLACK_WEBHOOK_URL`/`GMAIL_ADDRESS`/`GMAIL_APP_PASSWORD`/`GMAIL_TO`의 `${{ secrets.* }}` 연결은 STEP 23에서 준비한 그대로 유지했습니다. `OPENAI_API_KEY`/`OPENAI_MODEL`은 `main.py`가 아직 사용하지 않으므로 이번에도 workflow env에 연결하지 않았고, OpenAI 자동 호출이나 `openai_client.py`도 추가하지 않았습니다.
 
-PyYAML로 workflow 구조를 재검증했고(`env` 6개 키, `runs-on: ubuntu-latest`, step 5개 모두 정상), `python -m py_compile main.py`와 `import main`을 재실행해 `SEND_SLACK`/`SEND_GMAIL`이 환경변수 미설정 시 `False`/`False`로 안전하게 기본 동작함을 확인했습니다. 소스/Notebook/문서 전체에 실제 Secret 하드코딩이 없음을 grep으로 재확인했습니다(PASS).
+`main.py`는 이미 STEP 23에서 환경변수 기반 `SEND_SLACK`/`SEND_GMAIL`과 안전한 분기(Secret이 없으면 값 출력 없이 "건너뜁니다"/"생략합니다" 메시지만 남김)를 갖추고 있어 이번 STEP에서는 추가 수정하지 않았습니다.
 
-Notebook에 STEP 23의 3-Cell(작업 계획 / 코드 / 결과 해석)을 추가했습니다. 기존 STEP 03~22는 수정하지 않았습니다. Code Cell은 Secret을 실제로 등록/조회하지 않고, workflow 파일에 `secrets.SLACK_WEBHOOK_URL`/`secrets.GMAIL_ADDRESS`/`secrets.GMAIL_APP_PASSWORD`/`secrets.GMAIL_TO` 참조가 존재하는지, `SEND_SLACK`/`SEND_GMAIL` 기본값이 `false`인지만 확인합니다.
+PyYAML로 workflow를 재검증했습니다: `on` 블록에 `workflow_dispatch`와 `schedule`이 모두 존재하고 `schedule`의 `cron`이 정확히 `"0 0 * * 1"`임을 확인, `env`의 `SEND_SLACK`/`SEND_GMAIL`이 `"true"`임을 확인, `runs-on: ubuntu-latest`와 step 5개가 그대로 유지됨을 확인했습니다(`on:` 키가 PyYAML에서 boolean으로 표시되는 것은 이전과 동일한 YAML 1.1 파서 특성이며 GitHub Actions 동작에는 영향 없음). `python -m py_compile main.py`와 `import main` 재검사도 PASS했습니다. 소스/workflow 전체에 실제 Secret 하드코딩이 없음을 grep으로 재확인했습니다(PASS) — Secret 값은 이번 작업에서도 한 번도 조회하거나 출력하지 않았습니다.
 
-변경 사항(`main.py`, workflow, Notebook, PROGRESS.md)을 `git add` → `git commit`("Prepare GitHub Secrets integration for STEP 23") → `git push origin main`으로 practice 저장소에 반영했습니다(세부 커밋 SHA는 아래 갱신 이력 참고). 교육용 원본 저장소에는 어떤 commit/push도 하지 않았습니다.
+**중요 경고**: 이번 변경 이후 GitHub Actions에서 Run workflow를 수동으로 실행할 때마다 실제 Slack 메시지 1건과 Gmail 메일 1건이 각각 발송됩니다. 이 경고는 Notebook STEP 24 Markdown Cell에도 동일하게 기록했습니다.
+
+reports 파일은 이번 STEP에서도 artifact upload나 저장소 자동 commit을 추가하지 않았습니다(Actions runner 종료 시 사라지는 현재 동작 그대로 유지).
+
+Notebook에 STEP 24의 3-Cell(작업 계획 / 코드 / 결과 해석)을 추가했습니다. 기존 STEP 03~23은 수정하지 않았습니다. Code Cell은 GitHub Actions를 실제로 실행하지 않고, workflow의 `workflow_dispatch`/`schedule`/`cron`/`SEND_SLACK`/`SEND_GMAIL`/4개 secrets 참조 존재 여부만 확인합니다(Secret 실제 값은 조회하지 않음).
+
+변경 사항(workflow, Notebook, PROGRESS.md)을 `git add` → `git commit`("Enable weekly AX Job Agent notifications for STEP 24") → `git push origin main`으로 practice 저장소에 반영했습니다(세부 커밋 SHA는 아래 갱신 이력 참고). 교육용 원본 저장소에는 어떤 commit/push도 하지 않았습니다.
 
 ### 실행 예정 위치
 
-GitHub 웹(Settings → Secrets and variables → Actions → New repository secret) — **사용자가 직접 6개 Secret 등록**
+GitHub 웹(Actions → AX Job Agent → Run workflow) — **사용자가 직접 1회 실행하여 실제 Slack/Gmail 수신까지 확인**
 
 ## 다음 작업 완료 기준
 
-사용자가 GitHub 웹에서 아래 6개 Repository Secret을 모두 실제로 등록 완료해야 STEP 23을 `DONE`으로 처리합니다. workflow 준비와 commit/push만으로는 완료 처리하지 않습니다.
+다음을 모두 사용자가 직접 확인해야 STEP 24를 `DONE`으로 처리합니다. workflow 수정과 commit/push만으로는 완료 처리하지 않습니다.
 
-- `OPENAI_API_KEY`
-- `OPENAI_MODEL`
-- `SLACK_WEBHOOK_URL`
-- `GMAIL_ADDRESS`
-- `GMAIL_APP_PASSWORD`
-- `GMAIL_TO`
+- GitHub Actions에서 Run workflow 실행 결과가 Success
+- 실제 Slack 채널에 메시지 1건이 도착
+- 실제 Gmail 수신함에 메일 1건이 도착(제목/본문/한글 정상)
+- Actions 실행 로그 어디에도 Secret 값이 노출되지 않음
+- 불필요한 중복 발송이 없음
 
 ## 작업 재개 시 먼저 실행할 명령
 
@@ -146,12 +154,14 @@ where.exe python
 | STEP 20 | 로컬 전체 실행 검증 | DONE | 사용자가 Notebook STEP 20 Code Cell을 직접 실행하여 구조/문법/import/입력 데이터/main.py 구조/보고서/환경변수/보안/Slack·Gmail 호출 없음을 모두 확인 완료 |
 | STEP 21 | Git 저장 / Push | DONE | `requirements.txt` 생성, 비밀정보/gitignore 최종 점검 PASS, practice 저장소 `main` 브랜치에 commit(`590d23f`) 및 push 성공, working tree clean, 원격이 practice 저장소만임을 확인 |
 | STEP 22 | GitHub Actions 수동 실행 | DONE | 사용자가 GitHub 웹에서 Actions → AX Job Agent → Run workflow를 직접 실행하여 `workflow_dispatch` 수동 실행 Success 확인, `python main.py` 정상 실행 완료 |
-| STEP 23 | GitHub Secrets | IN_PROGRESS | `main.py`의 `SEND_SLACK`/`SEND_GMAIL` 환경변수화(기본값 false), workflow에 Slack/Gmail Secret 연결 구조 준비, commit/push 완료 — 사용자의 GitHub Secrets 6개 실제 등록 대기 중 |
-| STEP 24 | GitHub Actions 주간 자동 실행 | NOT_STARTED | `cron: "0 0 * * 1"` 스케줄 등록, 자동 실행 결과 확인 |
+| STEP 23 | GitHub Secrets | DONE | 사용자가 GitHub 웹에서 6개 Repository Secret(`OPENAI_API_KEY`/`OPENAI_MODEL`/`SLACK_WEBHOOK_URL`/`GMAIL_ADDRESS`/`GMAIL_APP_PASSWORD`/`GMAIL_TO`) 실제 등록 완료 확인 |
+| STEP 24 | GitHub Actions 주간 자동 실행 | IN_PROGRESS | `schedule`(`cron: "0 0 * * 1"`) 추가 및 `workflow_dispatch` 유지, `SEND_SLACK=true`/`SEND_GMAIL=true` 활성화, commit/push 완료 — 사용자의 Run workflow 실행 및 실제 Slack/Gmail 수신 확인 대기 중 |
 
 ---
 
 ## 갱신 이력 (최신이 위로)
+
+- **2026-09-23**: 사용자가 GitHub 웹 Settings → Secrets and variables → Actions에서 6개 Repository Secret(`OPENAI_API_KEY`/`OPENAI_MODEL`/`SLACK_WEBHOOK_URL`/`GMAIL_ADDRESS`/`GMAIL_APP_PASSWORD`/`GMAIL_TO`) 실제 등록을 완료함 — STEP 23 `DONE` 처리. STEP 24(주간 자동 실행 + Slack/Gmail 발송 활성화)로 전환. `.github/workflows/ax-job-agent.yml`의 `on` 트리거에 `schedule`(`cron: "0 0 * * 1"`, 매주 월요일 09:00 KST) 추가하고 `workflow_dispatch`는 유지(수동 테스트/재실행 대비). `run-agent` job의 `env`에서 `SEND_SLACK`/`SEND_GMAIL`을 `"false"`에서 `"true"`로 변경해 실제 Slack/Gmail 발송 활성화, 4개 Secret(`SLACK_WEBHOOK_URL`/`GMAIL_ADDRESS`/`GMAIL_APP_PASSWORD`/`GMAIL_TO`) 연결은 STEP 23에서 준비한 그대로 유지. `OPENAI_API_KEY`/`OPENAI_MODEL`은 이번에도 workflow env에 연결하지 않았고 OpenAI 자동 호출/`openai_client.py`도 추가하지 않음. `main.py`는 이미 STEP 23에서 환경변수 기반 SEND_SLACK/SEND_GMAIL과 안전한 분기(Secret 없으면 값 미출력·생략 메시지만 남김)를 갖추고 있어 추가 수정 없음. PyYAML로 `on`(workflow_dispatch+schedule, cron 정확히 일치)/`env`(SEND_SLACK/SEND_GMAIL true)/`runs-on`/step 5개 재검증 PASS, `py_compile`/`import main` 재검사 PASS, 소스/workflow 전체 비밀정보 하드코딩 grep PASS(Secret 값은 이번에도 조회/출력하지 않음). "Run workflow를 실행할 때마다 실제 Slack 메시지와 Gmail 메일이 각각 1건 발송됩니다"라는 경고를 PROGRESS.md와 Notebook 양쪽에 명시. artifact upload/저장소 자동 commit은 추가하지 않음(reports는 runner 종료 시 사라지는 기존 동작 유지). Notebook에 STEP 24 3-Cell 추가(기존 STEP 03~23 미수정, Code Cell은 GitHub Actions를 실행하지 않고 workflow의 트리거/cron/env/secrets 참조만 확인). `git add`/`commit`("Enable weekly AX Job Agent notifications for STEP 24")/`push`로 practice 저장소에 반영(교육용 원본 저장소에는 commit/push 없음). 사용자가 GitHub Actions에서 Run workflow를 1회 실행해 Action 성공 + 실제 Slack/Gmail 수신 + Secret 로그 미노출을 모두 확인하기 전까지 STEP 24는 `IN_PROGRESS` 유지.
 
 - **2026-09-23**: 사용자가 GitHub 웹에서 Actions → AX Job Agent → Run workflow를 직접 실행하여 `workflow_dispatch` 수동 실행 Status: Success, `run-agent` job 성공을 확인 — STEP 22 `DONE` 처리. STEP 23(GitHub Secrets 등록)으로 전환. `main.py`의 `SEND_SLACK`/`SEND_GMAIL`을 하드코딩 `False`에서 `os.getenv("SEND_SLACK", "false").lower() == "true"` 방식(기본값 항상 false)으로 최소 수정, 환경변수 미설정/`"false"`/`"true"` 세 경우를 실제 실행해 `False`/`False`/`True`로 정확히 동작함을 확인. 기존 Slack/Gmail 발송 분기는 이미 Secret 부재 시 값 미출력·생략 메시지만 남기도록 되어 있어 별도 수정 없음. `.github/workflows/ax-job-agent.yml`의 `run-agent` job에 `env` 블록 추가 — `SEND_SLACK: "false"`/`SEND_GMAIL: "false"`(기본값 유지, 실제 발송 강제 안 함)와 `SLACK_WEBHOOK_URL`/`GMAIL_ADDRESS`/`GMAIL_APP_PASSWORD`/`GMAIL_TO`를 `${{ secrets.* }}`로 연결. `OPENAI_API_KEY`/`OPENAI_MODEL`은 `main.py`가 사용하지 않아 불필요한 노출을 늘리지 않기 위해 workflow env에는 연결하지 않음(Secret 등록 자체는 진행 대상). PyYAML로 workflow 구조 재검증 PASS, `py_compile`/`import main` 재검사 PASS, 소스/Notebook/문서 전체 비밀정보 하드코딩 grep PASS. Claude Code는 `.env` 실제 값을 읽거나 출력하지 않음(Secret 이름만 다룸). Notebook에 STEP 23 3-Cell 추가(기존 STEP 03~22 미수정, Code Cell은 Secret을 실제 등록/조회하지 않고 workflow의 secrets 참조 존재 여부와 SEND_SLACK/SEND_GMAIL 기본값만 확인). `git add`/`commit`("Prepare GitHub Secrets integration for STEP 23")/`push`로 practice 저장소에 반영(교육용 원본 저장소에는 commit/push 없음). 사용자가 GitHub 웹에서 6개 Secret을 실제 등록 완료하기 전까지 STEP 23은 `IN_PROGRESS` 유지.
 

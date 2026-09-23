@@ -2,14 +2,17 @@ name: AX Job Agent
 
 on:
   workflow_dispatch:
+  schedule:
+    # 매주 월요일 오전 9시 KST = 매주 월요일 00:00 UTC
+    - cron: "0 0 * * 1"
 
 jobs:
   run-agent:
     runs-on: ubuntu-latest
 
     env:
-      SEND_SLACK: "false"
-      SEND_GMAIL: "false"
+      SEND_SLACK: "true"
+      SEND_GMAIL: "true"
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
       GMAIL_ADDRESS: ${{ secrets.GMAIL_ADDRESS }}
       GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
